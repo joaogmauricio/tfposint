@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  tfposint:
+    build: .
+    environment:
+      - DATABASE_URL=sqlite:///core/database/data/tfposint.db
+    volumes:
+      - /tmp/data:/app/core/database/data
+    command: python tfposint.py inspect gugu

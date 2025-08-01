@@ -1,0 +1,4 @@
+
+typer[all]
+sqlalchemy
+prompt_toolkit
