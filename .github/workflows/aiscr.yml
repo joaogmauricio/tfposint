@@ -3,26 +3,37 @@ on:
   pull_request:
   push:
     branches: [main]
-
+  workflow_dispatch:
+  
 concurrency:
   group: aiscr-${{ github.ref }}
   cancel-in-progress: true
-
+  
 jobs:
   scan:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
+      actions: read
     steps:
       - uses: actions/checkout@v4
-        with:
+        with: 
           fetch-depth: 0
-      - uses: joaogmauricio/ai-security-code-reviewer@test/aiscr-action
+      - uses: joaogmauricio/ai-security-code-reviewer@main
         with:
-          api-key: ${{ secrets.GENAI_GATEWAY_KEY }}
-          base-url: https://genai-sharedservice-emea.pwcinternal.com/
-          opus-model: vertex_ai.anthropic.claude-opus-4-8
-          sonnet-model: vertex_ai.anthropic.claude-sonnet-4-6
-          haiku-model: vertex_ai.anthropic.claude-3-haiku
-          fail-on: never
+          # Required
+          api-key:    ${{ secrets.GENAI_GATEWAY_KEY }}
+          
+          # Gateway / model routing — empty when unset = direct Anthropic API
+          base-url:   ${{ vars.AISCR_BASE_URL }}
+          opus-model:   ${{ vars.AISCR_OPUS_MODEL }}
+          sonnet-model: ${{ vars.AISCR_SONNET_MODEL }}
+          haiku-model:  ${{ vars.AISCR_HAIKU_MODEL }}
+          
+          # Behavior toggles — fallback to action default when unset
+          mode:                    ${{ vars.AISCR_MODE                    || 'delta' }}
+          fail-on:                 ${{ vars.AISCR_FAIL_ON                 || 'never' }}
+          verbose:                 ${{ vars.AISCR_VERBOSE                 || 'false' }}
+          upload-artifact:         ${{ vars.AISCR_UPLOAD_ARTIFACT         || 'true'  }}
+          artifact-retention-days: ${{ vars.AISCR_ARTIFACT_RETENTION_DAYS || '30'    }}
